@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Am I Safe? — Free Immigration Status Risk Checker</title>
+<meta name="description" content="Answer 5 quick questions and find out your immigration risk level — and exactly what to do next. Free tool, no login required.">
+<meta property="og:title" content="Am I Safe? Free Immigration Risk Check (2 Minutes)">
+<meta property="og:description" content="Find out your real immigration risk level and get a free action plan in under 2 minutes.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Epilogue:wght@400;500;600&display=swap" rel="stylesheet">
+ 
+<style>
+:root {
+  --bg: #0b0f1a;
+  --surface: #111827;
+  --surface2: #1a2236;
+  --border: rgba(255,255,255,0.08);
+  --accent: #22d3a5;
+  --accent2: #0ea47e;
+  --warn: #f59e0b;
+  --danger: #ef4444;
+  --safe: #22c55e;
+  --white: #ffffff;
+  --muted: rgba(255,255,255,0.5);
+  --text: rgba(255,255,255,0.88);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+body {
+  font-family: 'Epilogue', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+ 
+/* Background mesh */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 20%, rgba(34,211,165,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 80% 80%, rgba(239,68,68,0.06) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+ 
+.wrap {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+ 
+/* ── HEADER ── */
+.site-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+.logo-text {
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+.powered-by {
+  font-size: 12px;
+  color: var(--muted);
+}
+.powered-by a { color: var(--accent); text-decoration: none; }
+ 
+/* ── QUIZ CARD ── */
+.quiz-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  width: 100%;
+  max-width: 640px;
+  padding: 44px 40px;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.5);
+  position: relative;
+  overflow: hidden;
+}
+.quiz-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), #3b82f6);
+  border-radius: 24px 24px 0 0;
+}
+@media(max-width:560px){ .quiz-card { padding: 32px 22px; } }
+ 
+/* Progress */
+.progress-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 36px;
+}
+.progress-track {
+  flex: 1;
+  height: 4px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), #3b82f6);
+  border-radius: 10px;
+  transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+.progress-label {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+  font-family: 'Syne', sans-serif;
+  font-weight: 600;
+}
+ 
+/* Question */
+.q-screen { display: none; animation: fadeSlide 0.35s ease; }
+.q-screen.active { display: block; }
+@keyframes fadeSlide {
+  from { opacity:0; transform: translateX(18px); }
+  to { opacity:1; transform: translateX(0); }
+}
+ 
+.q-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: rgba(34,211,165,0.1);
+  border: 1px solid rgba(34,211,165,0.2);
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-bottom: 16px;
+}
+.q-text {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(1.2rem, 3vw, 1.55rem);
+  font-weight: 700;
+  color: var(--white);
+  line-height: 1.35;
+  margin-bottom: 28px;
+}
+.q-sub {
+  font-size: 0.88rem;
+  color: var(--muted);
+  margin-top: -20px;
+  margin-bottom: 28px;
+  line-height: 1.5;
+}
+ 
+/* Options */
+.options-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.option-btn {
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 20px;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text);
+  font-family: 'Epilogue', sans-serif;
+  font-size: 0.97rem;
+  font-weight: 500;
+  transition: all 0.18s;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.option-btn:hover {
+  border-color: var(--accent);
+  background: rgba(34,211,165,0.08);
+  color: var(--white);
+  transform: translateX(4px);
+}
+.option-btn.selected {
+  border-color: var(--accent);
+  background: rgba(34,211,165,0.12);
+  color: var(--white);
+}
+.opt-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+  width: 32px;
+  text-align: center;
+}
+ 
+/* ── INTRO SCREEN ── */
+#screen-intro {
+  text-align: center;
+  display: block;
+}
+.intro-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(239,68,68,0.12);
+  border: 1px solid rgba(239,68,68,0.3);
+  color: #fca5a5;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 6px 16px;
+  border-radius: 20px;
+  margin-bottom: 20px;
+}
+.intro-title {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(1.8rem, 5vw, 2.8rem);
+  font-weight: 800;
+  color: var(--white);
+  line-height: 1.15;
+  margin-bottom: 16px;
+}
+.intro-title span { color: var(--accent); }
+.intro-sub {
+  font-size: 1rem;
+  color: var(--muted);
+  line-height: 1.7;
+  margin-bottom: 32px;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.start-btn {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--accent), #0ea47e);
+  color: #0b0f1a;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 16px;
+  padding: 18px 40px;
+  border-radius: 50px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 8px 32px rgba(34,211,165,0.35);
+  transition: transform 0.18s, box-shadow 0.18s;
+  text-decoration: none;
+}
+.start-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(34,211,165,0.45); }
+.intro-trust {
+  margin-top: 18px;
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.intro-trust span { display: flex; align-items: center; gap: 5px; }
+ 
+/* ── RESULT SCREEN ── */
+#screen-result { display: none; }
+ 
+.result-meter {
+  margin: 0 auto 28px;
+  text-align: center;
+}
+.risk-ring {
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Syne', sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  border: 4px solid;
+  position: relative;
+}
+.risk-ring.low { border-color: var(--safe); color: var(--safe); background: rgba(34,197,94,0.08); }
+.risk-ring.medium { border-color: var(--warn); color: var(--warn); background: rgba(245,158,11,0.08); }
+.risk-ring.high { border-color: var(--danger); color: var(--danger); background: rgba(239,68,68,0.08); }
+ 
+.risk-label {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+.risk-label.low { color: var(--safe); }
+.risk-label.medium { color: var(--warn); }
+.risk-label.high { color: var(--danger); }
+ 
+.result-title {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(1.25rem, 3vw, 1.6rem);
+  font-weight: 700;
+  color: var(--white);
+  text-align: center;
+  margin-bottom: 10px;
+}
+.result-desc {
+  font-size: 0.95rem;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.7;
+  margin-bottom: 28px;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+ 
+.action-list {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px 22px;
+  margin-bottom: 28px;
+}
+.action-list h4 {
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+.action-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+.action-item:last-child { margin-bottom: 0; }
+.action-num {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: rgba(34,211,165,0.15);
+  border: 1px solid rgba(34,211,165,0.3);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+ 
+.cta-section { text-align: center; }
+.cta-primary {
+  display: block;
+  background: linear-gradient(135deg, var(--accent), #0ea47e);
+  color: #0b0f1a;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 16px;
+  padding: 18px 28px;
+  border-radius: 14px;
+  text-decoration: none;
+  margin-bottom: 10px;
+  box-shadow: 0 8px 28px rgba(34,211,165,0.3);
+  transition: transform 0.18s;
+}
+.cta-primary:hover { transform: translateY(-2px); }
+.cta-secondary {
+  display: block;
+  background: transparent;
+  border: 1.5px solid var(--border);
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 14px 28px;
+  border-radius: 14px;
+  text-decoration: none;
+  transition: border-color 0.18s, color 0.18s;
+  margin-bottom: 10px;
+}
+.cta-secondary:hover { border-color: var(--accent); color: var(--accent); }
+ 
+.restart-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+  font-family: 'Epilogue', sans-serif;
+  margin-top: 6px;
+  text-decoration: underline;
+}
+.restart-btn:hover { color: var(--white); }
+ 
+.share-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+.share-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-family: 'Epilogue', sans-serif;
+  text-decoration: none;
+  transition: border-color 0.18s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.share-btn:hover { border-color: var(--accent); color: var(--accent); }
+ 
+/* Pulse dot */
+.live-dot {
+  width: 8px; height: 8px;
+  background: var(--danger);
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+  display: inline-block;
+}
+@keyframes pulse {
+  0%,100% { opacity:1; transform: scale(1); }
+  50% { opacity:0.5; transform: scale(1.5); }
+}
+ 
+.disclaimer {
+  font-size: 11px;
+  color: rgba(255,255,255,0.25);
+  text-align: center;
+  margin-top: 20px;
+  line-height: 1.6;
+}
+</style>
+</head>
+<body>
+ 
+<div class="wrap">
+ 
+  <div class="site-header">
+    <div class="logo-text">🇺🇸 ImmigrationSafetyCheck.com</div>
+    <div class="powered-by">Free tool by <a href="https://easylegalfiling.com" target="_blank">EasyLegalFiling.com</a></div>
+  </div>
+ 
+  <div class="quiz-card">
+ 
+    <!-- Progress bar (hidden on intro/result) -->
+    <div class="progress-row" id="progress-row" style="display:none;">
+      <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+      <div class="progress-label" id="progress-label">1 / 5</div>
+    </div>
+ 
+    <!-- INTRO -->
+    <div id="screen-intro">
+      <div class="intro-badge"><span class="live-dot"></span> 2026 Immigration Enforcement Alert</div>
+      <h1 class="intro-title">Are You <span>Safe</span> Right Now?</h1>
+      <p class="intro-sub">Immigration enforcement is at record levels in 2026. Answer 5 questions and get your free personalized risk assessment + action plan in under 2 minutes.</p>
+      <button class="start-btn" onclick="startQuiz()">Check My Status — Free →</button>
+      <div class="intro-trust">
+        <span>🔒 No login required</span>
+        <span>⚡ 2 minutes</span>
+        <span>✅ 100% free</span>
+        <span>👁️ Anonymous</span>
+      </div>
+    </div>
+ 
+    <!-- Q1 -->
+    <div id="screen-q1" class="q-screen">
+      <div class="q-tag">Question 1 of 5</div>
+      <div class="q-text">What is your current immigration status in the U.S.?</div>
+      <div class="options-grid">
+        <button class="option-btn" onclick="answer(1,'undocumented',3)"><span class="opt-icon">⚠️</span> No documentation / undocumented</button>
+        <button class="option-btn" onclick="answer(1,'visa_expired',2)"><span class="opt-icon">📋</span> Visa expired or overstayed</button>
+        <button class="option-btn" onclick="answer(1,'pending',1)"><span class="opt-icon">⏳</span> Application pending (DACA, asylum, green card)</button>
+        <button class="option-btn" onclick="answer(1,'valid_visa',1)"><span class="opt-icon">✅</span> Valid visa or work permit</button>
+        <button class="option-btn" onclick="answer(1,'green_card',0)"><span class="opt-icon">🟢</span> Green card / permanent resident</button>
+        <button class="option-btn" onclick="answer(1,'citizen',0)"><span class="opt-icon">🇺🇸</span> U.S. citizen</button>
+      </div>
+    </div>
+ 
+    <!-- Q2 -->
+    <div id="screen-q2" class="q-screen">
+      <div class="q-tag">Question 2 of 5</div>
+      <div class="q-text">Have you ever missed a court date or received a removal/deportation order?</div>
+      <div class="options-grid">
+        <button class="option-btn" onclick="answer(2,'yes_removal',4)"><span class="opt-icon">🚨</span> Yes — I have a removal order</button>
+        <button class="option-btn" onclick="answer(2,'yes_missed',3)"><span class="opt-icon">⚠️</span> Yes — I missed an immigration court date</button>
+        <button class="option-btn" onclick="answer(2,'unsure',2)"><span class="opt-icon">❓</span> I'm not sure / I don't know</button>
+        <button class="option-btn" onclick="answer(2,'no',0)"><span class="opt-icon">✅</span> No — never</button>
+      </div>
+    </div>
+ 
+    <!-- Q3 -->
+    <div id="screen-q3" class="q-screen">
+      <div class="q-tag">Question 3 of 5</div>
+      <div class="q-text">Do you have any criminal charges or convictions on your record?</div>
+      <div class="options-grid">
+        <button class="option-btn" onclick="answer(3,'felony',4)"><span class="opt-icon">🔴</span> Yes — felony conviction</button>
+        <button class="option-btn" onclick="answer(3,'misdemeanor',2)"><span class="opt-icon">🟡</span> Yes — misdemeanor or minor charge</button>
+        <button class="option-btn" onclick="answer(3,'pending_charges',2)"><span class="opt-icon">⏳</span> Pending charges (not yet convicted)</button>
+        <button class="option-btn" onclick="answer(3,'none',0)"><span class="opt-icon">✅</span> No criminal record</button>
+      </div>
+    </div>
+ 
+    <!-- Q4 -->
+    <div id="screen-q4" class="q-screen">
+      <div class="q-tag">Question 4 of 5</div>
+      <div class="q-text">How long have you been living in the United States?</div>
+      <div class="options-grid">
+        <button class="option-btn" onclick="answer(4,'under1',2)"><span class="opt-icon">🆕</span> Less than 1 year</button>
+        <button class="option-btn" onclick="answer(4,'1to5',1)"><span class="opt-icon">📅</span> 1–5 years</button>
+        <button class="option-btn" onclick="answer(4,'5to10',1)"><span class="opt-icon">🗓️</span> 5–10 years</button>
+        <button class="option-btn" onclick="answer(4,'over10',0)"><span class="opt-icon">🏡</span> Over 10 years</button>
+      </div>
+    </div>
+ 
+    <!-- Q5 -->
+    <div id="screen-q5" class="q-screen">
+      <div class="q-tag">Question 5 of 5 — Almost done!</div>
+      <div class="q-text">Do you have a spouse or children who are U.S. citizens or permanent residents?</div>
+      <div class="options-grid">
+        <button class="option-btn" onclick="answer(5,'spouse_citizen',0)"><span class="opt-icon">💍</span> Yes — U.S. citizen spouse</button>
+        <button class="option-btn" onclick="answer(5,'child_citizen',0)"><span class="opt-icon">👶</span> Yes — U.S. citizen child(ren)</button>
+        <button class="option-btn" onclick="answer(5,'green_card_family',1)"><span class="opt-icon">🟢</span> Yes — green card holder family</button>
+        <button class="option-btn" onclick="answer(5,'no_ties',1)"><span class="opt-icon">❌</span> No immediate U.S. family ties</button>
+      </div>
+    </div>
+ 
+    <!-- RESULT -->
+    <div id="screen-result">
+      <div class="result-meter">
+        <div class="risk-ring" id="risk-ring"></div>
+        <div class="risk-label" id="risk-label"></div>
+      </div>
+      <div class="result-title" id="result-title"></div>
+      <div class="result-desc" id="result-desc"></div>
+      <div class="action-list">
+        <h4>⚡ Your Personalized Action Plan</h4>
+        <div id="action-items"></div>
+      </div>
+      <div class="cta-section">
+        <a id="cta-primary-link" class="cta-primary" href="https://easylegalfiling.com" target="_blank" onclick="trackCTA('primary')">Get My Free Legal Consultation →</a>
+        <a id="cta-secondary-link" class="cta-secondary" href="https://easylegalfiling.com" target="_blank" onclick="trackCTA('secondary')">See All Services at EasyLegalFiling.com</a>
+        <button class="restart-btn" onclick="restartQuiz()">↩ Retake the quiz</button>
+      </div>
+      <div class="share-row">
+        <a class="share-btn" href="https://www.facebook.com/sharer/sharer.php?u=https://immigrationsafetycheck.com" target="_blank">📘 Share on Facebook</a>
+        <a class="share-btn" href="https://twitter.com/intent/tweet?text=I%20just%20checked%20my%20immigration%20risk%20—%20free%20tool%3A%20https://immigrationsafetycheck.com" target="_blank">🐦 Share on X</a>
+        <a class="share-btn" href="https://wa.me/?text=Check%20your%20immigration%20risk%20for%20free%3A%20https://immigrationsafetycheck.com" target="_blank">💬 Share on WhatsApp</a>
+      </div>
+    </div>
+ 
+  </div><!-- /quiz-card -->
+ 
+  <div class="disclaimer">
+    This tool does not provide legal advice. For legal guidance, consult a licensed immigration attorney.<br>
+    Tool provided free by <a href="https://easylegalfiling.com" target="_blank" style="color:rgba(255,255,255,0.4);">EasyLegalFiling.com</a> — Attorney-Designed Filing Systems
+  </div>
+ 
+</div>
+ 
+<script>
+// TikTok pixel (reuse same ID from main site)
+!function(w,d,t){w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"];ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var i="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=i,ttq._t=ttq._t||{},ttq._t[e]=+new Date;ttq._o=ttq._o||{},ttq._o[e]=n||{};n=document.createElement("script");n.type="text/javascript";n.async=!0,n.src=i+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};ttq.load('D3M0V0RC77UELR3MUGNG');ttq.page();}(window,document,'ttq');
+ 
+function trackCTA(type){ if(window.ttq) ttq.track('InitiateCheckout',{content_name:'Immigration Safety Tool - '+type}); }
+ 
+// ── STATE ──
+let score = 0;
+let answers = {};
+const totalQ = 5;
+ 
+function showScreen(id) {
+  document.querySelectorAll('.q-screen, #screen-intro, #screen-result').forEach(s => {
+    s.style.display = 'none';
+    s.classList.remove('active');
+  });
+  const el = document.getElementById(id);
+  if (el.classList.contains('q-screen')) {
+    el.style.display = 'block';
+    el.classList.add('active');
+  } else {
+    el.style.display = 'block';
+  }
+}
+ 
+function startQuiz() {
+  document.getElementById('progress-row').style.display = 'flex';
+  score = 0; answers = {};
+  showScreen('screen-q1');
+  updateProgress(1);
+  if(window.ttq) ttq.track('ViewContent',{content_name:'Started Immigration Quiz'});
+}
+ 
+function answer(qNum, value, points) {
+  score += points;
+  answers['q'+qNum] = value;
+  if (qNum < totalQ) {
+    showScreen('screen-q' + (qNum+1));
+    updateProgress(qNum+1);
+  } else {
+    showResult();
+  }
+}
+ 
+function updateProgress(current) {
+  const pct = ((current-1)/totalQ)*100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = current + ' / ' + totalQ;
+}
+ 
+function showResult() {
+  document.getElementById('progress-row').style.display = 'none';
+  showScreen('screen-result');
+ 
+  const ring = document.getElementById('risk-ring');
+  const label = document.getElementById('risk-label');
+  const title = document.getElementById('result-title');
+  const desc = document.getElementById('result-desc');
+  const actions = document.getElementById('action-items');
+  const ctaPrimary = document.getElementById('cta-primary-link');
+  const ctaSecondary = document.getElementById('cta-secondary-link');
+ 
+  let riskLevel, emoji, titleText, descText, actionList, primaryCTA, primaryURL, secondaryURL;
+ 
+  if (score >= 8) {
+    riskLevel = 'high';
+    emoji = '🚨';
+    titleText = 'High Risk — Take Action Immediately';
+    descText = 'Based on your answers, your situation requires urgent attention. Waiting makes this significantly harder and more expensive to fix. You have options — but time matters.';
+    actionList = [
+      'Do NOT ignore court notices or removal orders — respond immediately',
+      'Get your case reviewed by an attorney-designed filing system today',
+      'If you missed a court date, file a Motion to Reopen as soon as possible',
+      'Document your U.S. ties (family, employment, community) now',
+      'Avoid any situations that could add charges or complications'
+    ];
+    primaryCTA = '🚨 Fix My Case Now (Urgent)';
+    primaryURL = 'https://easydivorcefiling.gavel.io/portal/bundles/1fdc878f-a324-489a-bc6a-272f3e973196';
+    secondaryURL = 'https://easylegalfiling.com';
+  } else if (score >= 4) {
+    riskLevel = 'medium';
+    emoji = '⚠️';
+    titleText = 'Moderate Risk — Don\'t Wait';
+    descText = 'Your situation has some risk factors you should address. You\'re not in immediate danger, but the window to fix this affordably is now — before things escalate.';
+    actionList = [
+      'Review your current visa or status documentation today',
+      'Check if you have any outstanding court dates or obligations',
+      'Consider applying for any status you may be eligible for',
+      'Keep copies of all your U.S. ties documented (leases, employment, taxes)',
+      'Get a free immigration status review using the tool below'
+    ];
+    primaryCTA = '⚡ Check My Options (Free)';
+    primaryURL = 'http://easylegalfiling.com/immigration-tool/';
+    secondaryURL = 'https://easylegalfiling.com';
+  } else {
+    riskLevel = 'low';
+    emoji = '✅';
+    titleText = 'Lower Risk — Stay Protected';
+    descText = 'Your current situation appears relatively stable. The key is to stay proactive — keep your documents updated, track renewals, and know your rights.';
+    actionList = [
+      'Mark all visa/permit renewal dates on your calendar 6 months ahead',
+      'Know your rights if you ever encounter ICE or law enforcement',
+      'Keep copies of all immigration documents in a safe, accessible place',
+      'Check if you or family members qualify for additional status or citizenship',
+      'Stay informed about policy changes that could affect your status'
+    ];
+    primaryCTA = '🟢 Check My Full Status Options';
+    primaryURL = 'http://easylegalfiling.com/immigration-tool/';
+    secondaryURL = 'https://easylegalfiling.com';
+  }
+ 
+  ring.className = 'risk-ring ' + riskLevel;
+  ring.textContent = emoji;
+  label.className = 'risk-label ' + riskLevel;
+  label.textContent = riskLevel.charAt(0).toUpperCase() + riskLevel.slice(1) + ' Risk';
+  title.textContent = titleText;
+  desc.textContent = descText;
+  ctaPrimary.textContent = primaryCTA;
+  ctaPrimary.href = primaryURL;
+  ctaSecondary.href = secondaryURL;
+ 
+  actions.innerHTML = actionList.map((a, i) =>
+    `<div class="action-item"><div class="action-num">${i+1}</div><div>${a}</div></div>`
+  ).join('');
+ 
+  if(window.ttq) ttq.track('CompleteRegistration',{content_name:'Completed Immigration Quiz - ' + riskLevel});
+}
+ 
+function restartQuiz() {
+  score = 0; answers = {};
+  document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+  showScreen('screen-intro');
+}
+</script>
+ 
+</body>
+</html>
